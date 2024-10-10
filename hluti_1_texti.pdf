@@ -1,0 +1,24 @@
+
+Spurning 1: Útskýring á kóða 
+
+Notum AS til að skilgreina nöfnin á dálkunum. Notum síðan FULL OUTER JOIN til þess að sameina tvær töflur (kingdoms og houses) sem skilar öllu úr báðum töflunum jafnvel þótt það sé ekki samsvörun. 
+Gerum “CREATE TABLE IF NOT EXISTS”: Tryggir að taflan sé aðeins búin til ef hún er ekki þegar til. 
+Notum síðan “UNIQUE(kingdom_name, house_name)” til þess að hver pörun af ríki og húsi geti aðeins komið fram einu sinni. 
+Með “WITH kingdom_house_mapping”  búum við til CTE sem tímabundna töflu og notum síðan “FULL OUTER JOIN” aftur líkt og fyrr í kóðanum nema hér er hún að safna saman nema núna í CTE. Notum “INSERT INTO” síðan til þess að bæta við nýjum gögnum inn í tables_mapping töfluna. “ON CONFLICT (kingdom_name, house_name) DO NOTHING” er síðan til þess að koma í veg fyrir að einhverju sé bætt inn í töfluna sem uppfyllir ekki skilyrðin ( t.d. Ef parið er þegar til).  SELECT * skilar síðan öllum dálkum úr tables_mapping töflunni. 
+
+Spurning 2: útskýring á kóða
+
+Við byrjum á því að gera tímabundna töflu (CTE) sem við köllum hér “gagntaek_vorpun”. 
+Hér tökum við gögn saman úr tveimur töflum, bæði úr “atlas.locations” og “got.houses”. 
+Gerum “JOIN” á þessum tvem töflum þar sem l.name passar við eitthvað sæti í fylkinu “h.seats” úr “got.houses”. 
+Setjum síðan gögnin úr gagntaek_vorpun inn í töfluna tyrell.tables_mapping, þar sem við veljum abra dálkana house_id og location_id úr CTE. 
+Athugum síðan hvort gögn séu nú þegar, til að forðast endurtekningu á sömu gögnum með “WHERE NOT EXISTS” þar sem við gáum hvort það sé nú þegar til í tyrell.tables_mapping sama house_id og location_id. Ef þær eru ekki til er ný færsla sett inn. 
+
+Spurning 3: Útskýring á kóða 
+
+Byrjum á því að búa til CTE sem býr til tímabundna töflu (northern_houses). 
+Síðan sækjum við í got.houses “id” og “sworn_member”
+Notum síðan “WHERE region = The North” til þess að tryggja að aðeins sé sótt ættir úr norðinu. 
+Notum “split_part(c.name, ' ', array_length(string_to_array(c.name, ' ')” til þess að taka eftirnafnið úr nafninu og síðan “JOIN got.characters c ON nh.member_id = c.id” til þess að tengja sworn_members við viðeigandi upplýsingar úr got.characters töflunni. 
+Teljum næst hversu marga fjölskyldumeðlimi hver fjölskylda hefur í “The North”. Notum “ GROUP BY family_name” til að hópa alla saman eftir ættarnafni og “COUNT(*) til að telja fjölda meðlima. Veljum síðan aðeins þær fjölskyldur sem hafa fleiri en 5 fjölskyldumeðlimi með “HAVING COUNT(*) >5”. 
+Röðum síðan ættunum eftir fjölda meðlima. Og notum “family_name ASC” til að þau raðist í stafrófsröð ef sami fjöldi er í fleiri en einni ætt. 
